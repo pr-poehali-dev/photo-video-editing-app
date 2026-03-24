@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -465,8 +465,165 @@ function SettingsSection() {
   );
 }
 
+function VideoModal({ tutorial, onClose }: { tutorial: typeof TUTORIALS[0]; onClose: () => void }) {
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!playing) return;
+    const interval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) { setPlaying(false); return 100; }
+        return p + 0.4;
+      });
+    }, 80);
+    return () => clearInterval(interval);
+  }, [playing]);
+
+  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease-out" }}
+      onClick={handleBackdrop}
+    >
+      <div
+        className="relative w-full max-w-2xl mx-4 rounded-xl overflow-hidden"
+        style={{ background: "hsl(var(--panel-bg))", border: "1px solid hsl(var(--panel-border))", animation: "slideUp 0.25s ease-out", boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}
+      >
+        {/* Video area */}
+        <div className="relative" style={{ aspectRatio: "16/9", background: "linear-gradient(135deg, #050d1a 0%, #0a1628 40%, #050d1a 100%)" }}>
+          {/* Animated background particles */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: Math.random() * 3 + 1 + "px",
+                  height: Math.random() * 3 + 1 + "px",
+                  background: "hsl(var(--highlight))",
+                  left: (i * 8.3) + Math.random() * 6 + "%",
+                  top: Math.random() * 100 + "%",
+                  opacity: 0.3 + Math.random() * 0.4,
+                  animation: `float-${i % 3} ${3 + Math.random() * 4}s ease-in-out infinite`,
+                  animationDelay: Math.random() * 3 + "s",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Animated rings */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {[120, 90, 60].map((size, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full border"
+                style={{
+                  width: size, height: size,
+                  borderColor: `hsl(var(--highlight) / ${0.08 + i * 0.06})`,
+                  animation: `pulse-ring ${2 + i * 0.5}s ease-in-out infinite`,
+                  animationDelay: i * 0.4 + "s",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Gradient scan line animation */}
+          <div
+            className="absolute left-0 right-0 h-px opacity-30"
+            style={{
+              background: "linear-gradient(90deg, transparent, hsl(var(--highlight)), transparent)",
+              animation: "scanLine 3s linear infinite",
+            }}
+          />
+
+          {/* Center icon + play */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
+              style={{ background: playing ? "hsl(var(--highlight) / 0.9)" : "hsl(var(--highlight))", boxShadow: "0 0 40px hsl(var(--highlight) / 0.4)" }}
+              onClick={() => setPlaying(p => !p)}
+            >
+              <Icon name={playing ? "Pause" : "Play"} size={24} style={{ color: "#fff", marginLeft: playing ? 0 : 2 }} />
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-sm tracking-wide">{tutorial.title}</p>
+              <p className="text-xs mt-1 opacity-50">{tutorial.time} · {tutorial.level}</p>
+            </div>
+          </div>
+
+          {/* FREE badge */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider"
+            style={{ background: "linear-gradient(90deg, #22c55e, #16a34a)", color: "#fff", boxShadow: "0 2px 12px rgba(34,197,94,0.4)" }}>
+            <Icon name="Gift" size={11} />
+            БЕСПЛАТНО
+          </div>
+
+          {/* Progress bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: "hsl(var(--panel-border))" }}>
+            <div className="h-full transition-all duration-75" style={{ width: progress + "%", background: "hsl(var(--highlight))" }} />
+          </div>
+        </div>
+
+        {/* Content below video */}
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold text-base mb-1">{tutorial.title}</h3>
+              <p className="text-sm opacity-60 leading-relaxed">
+                Пошаговый урок, который поможет освоить редактор быстро и без лишних сложностей.
+              </p>
+            </div>
+            <button onClick={onClose} className="tool-btn w-7 h-7 shrink-0 mt-0.5">
+              <Icon name="X" size={15} />
+            </button>
+          </div>
+
+          {/* Trust signals */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {[
+              { icon: "Gift", label: "Полностью бесплатно", color: "#22c55e" },
+              { icon: "Users", label: "12 000+ пользователей", color: "hsl(var(--highlight))" },
+              { icon: "ShieldCheck", label: "Без регистрации", color: "#FF9800" },
+            ].map(item => (
+              <div key={item.label} className="flex flex-col items-center gap-1.5 p-3 rounded text-center" style={{ background: "hsl(var(--muted))" }}>
+                <Icon name={item.icon} size={16} style={{ color: item.color }} />
+                <span className="text-xs leading-tight opacity-70">{item.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPlaying(p => !p)}
+              className="flex-1 py-2.5 rounded text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-150 hover:opacity-90 active:scale-98"
+              style={{ background: "hsl(var(--highlight))", color: "#fff" }}
+            >
+              <Icon name={playing ? "Pause" : "PlayCircle"} size={15} />
+              {playing ? "Пауза" : "Смотреть урок"}
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 rounded text-sm font-medium border transition-colors hover:bg-secondary"
+              style={{ borderColor: "hsl(var(--panel-border))", color: "hsl(var(--muted-foreground))" }}
+            >
+              Позже
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HelpSection() {
   const [selected, setSelected] = useState<number | null>(null);
+  const [modalTutorial, setModalTutorial] = useState<typeof TUTORIALS[0] | null>(null);
+
   const levels: Record<string, string> = {
     "Начинающий": "#4CAF50",
     "Средний": "#FF9800",
@@ -474,52 +631,59 @@ function HelpSection() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 animate-fade-in">
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-lg font-semibold mb-1">Обучение и справка</h2>
-        <p className="text-sm mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Видеоуроки и документация для работы с редактором</p>
-        <div className="grid grid-cols-2 gap-3">
-          {TUTORIALS.map((t, i) => (
-            <div key={i} onClick={() => setSelected(selected === i ? null : i)} className="rounded border p-4 cursor-pointer transition-all duration-200" style={{ borderColor: selected === i ? "hsl(var(--highlight))" : "hsl(var(--panel-border))", background: selected === i ? "hsl(var(--highlight) / 0.05)" : "transparent" }}>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted))" }}>
-                  <Icon name={t.icon} size={16} style={{ color: "hsl(var(--highlight))" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium leading-snug">{t.title}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: levels[t.level] + "22", color: levels[t.level] }}>{t.level}</span>
-                    <span className="text-xs opacity-40 flex items-center gap-1">
-                      <Icon name="Clock" size={10} />{t.time}
-                    </span>
+    <>
+      {modalTutorial && <VideoModal tutorial={modalTutorial} onClose={() => setModalTutorial(null)} />}
+      <div className="flex-1 overflow-y-auto p-6 animate-fade-in">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-lg font-semibold mb-1">Обучение и справка</h2>
+          <p className="text-sm mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Видеоуроки и документация для работы с редактором</p>
+          <div className="grid grid-cols-2 gap-3">
+            {TUTORIALS.map((t, i) => (
+              <div key={i} onClick={() => setSelected(selected === i ? null : i)} className="rounded border p-4 cursor-pointer transition-all duration-200" style={{ borderColor: selected === i ? "hsl(var(--highlight))" : "hsl(var(--panel-border))", background: selected === i ? "hsl(var(--highlight) / 0.05)" : "transparent" }}>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted))" }}>
+                    <Icon name={t.icon} size={16} style={{ color: "hsl(var(--highlight))" }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium leading-snug">{t.title}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: levels[t.level] + "22", color: levels[t.level] }}>{t.level}</span>
+                      <span className="text-xs opacity-40 flex items-center gap-1">
+                        <Icon name="Clock" size={10} />{t.time}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                {selected === i && (
+                  <div className="mt-3 pt-3 border-t animate-fade-in" style={{ borderColor: "hsl(var(--panel-border))" }}>
+                    <p className="text-xs opacity-60 mb-2">Нажмите кнопку ниже, чтобы начать урок</p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setModalTutorial(t); }}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-all hover:opacity-90"
+                      style={{ background: "hsl(var(--highlight))", color: "#fff" }}
+                    >
+                      <Icon name="PlayCircle" size={12} />
+                      Начать урок
+                    </button>
+                  </div>
+                )}
               </div>
-              {selected === i && (
-                <div className="mt-3 pt-3 border-t animate-fade-in" style={{ borderColor: "hsl(var(--panel-border))" }}>
-                  <p className="text-xs opacity-60 mb-2">Нажмите кнопку ниже, чтобы начать урок</p>
-                  <button className="flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium" style={{ background: "hsl(var(--highlight))", color: "#fff" }}>
-                    <Icon name="PlayCircle" size={12} />
-                    Начать урок
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 p-4 rounded border" style={{ borderColor: "hsl(var(--panel-border))", background: "hsl(var(--panel-bg))" }}>
-          <div className="flex items-center gap-3 mb-3">
-            <Icon name="HelpCircle" size={18} style={{ color: "hsl(var(--highlight))" }} />
-            <span className="font-medium text-sm">Нужна помощь?</span>
+            ))}
           </div>
-          <p className="text-sm opacity-60 mb-3">Не нашли ответ на свой вопрос? Свяжитесь с поддержкой или посетите форум сообщества.</p>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 rounded text-xs font-medium" style={{ background: "hsl(var(--highlight))", color: "#fff" }}>Написать в поддержку</button>
-            <button className="px-4 py-2 rounded text-xs font-medium border transition-colors hover:bg-secondary" style={{ borderColor: "hsl(var(--panel-border))", color: "hsl(var(--muted-foreground))" }}>Форум</button>
+          <div className="mt-8 p-4 rounded border" style={{ borderColor: "hsl(var(--panel-border))", background: "hsl(var(--panel-bg))" }}>
+            <div className="flex items-center gap-3 mb-3">
+              <Icon name="HelpCircle" size={18} style={{ color: "hsl(var(--highlight))" }} />
+              <span className="font-medium text-sm">Нужна помощь?</span>
+            </div>
+            <p className="text-sm opacity-60 mb-3">Не нашли ответ на свой вопрос? Свяжитесь с поддержкой или посетите форум сообщества.</p>
+            <div className="flex gap-2">
+              <button className="px-4 py-2 rounded text-xs font-medium" style={{ background: "hsl(var(--highlight))", color: "#fff" }}>Написать в поддержку</button>
+              <button className="px-4 py-2 rounded text-xs font-medium border transition-colors hover:bg-secondary" style={{ borderColor: "hsl(var(--panel-border))", color: "hsl(var(--muted-foreground))" }}>Форум</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
