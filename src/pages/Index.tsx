@@ -465,9 +465,144 @@ function SettingsSection() {
   );
 }
 
+function RegisterModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState<"form" | "success">("form");
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep("success");
+  };
+
+  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(8px)", animation: "fadeIn 0.2s ease-out" }}
+      onClick={handleBackdrop}
+    >
+      <div
+        className="relative w-full max-w-sm mx-4 rounded-xl overflow-hidden"
+        style={{ background: "hsl(var(--panel-bg))", border: "1px solid hsl(var(--panel-border))", animation: "slideUp 0.25s ease-out", boxShadow: "0 32px 80px rgba(0,0,0,0.7)" }}
+      >
+        {step === "form" ? (
+          <>
+            {/* Header gradient */}
+            <div className="relative px-6 pt-7 pb-5" style={{ background: "linear-gradient(160deg, hsl(var(--highlight) / 0.12) 0%, transparent 60%)" }}>
+              <button onClick={onClose} className="absolute top-4 right-4 tool-btn w-7 h-7">
+                <Icon name="X" size={14} />
+              </button>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "hsl(var(--highlight))" }}>
+                <Icon name="Zap" size={18} style={{ color: "#fff" }} />
+              </div>
+              <h2 className="text-lg font-bold mb-1">Начать бесплатно</h2>
+              <p className="text-sm opacity-55">Создайте аккаунт за 30 секунд — без карты, без скрытых платежей</p>
+            </div>
+
+            {/* Trust pills */}
+            <div className="flex gap-2 px-6 mb-5">
+              {[
+                { icon: "Gift", label: "Бесплатно", color: "#22c55e" },
+                { icon: "Lock", label: "Безопасно", color: "hsl(var(--highlight))" },
+                { icon: "Zap", label: "Быстро", color: "#FF9800" },
+              ].map(p => (
+                <div key={p.label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                  <Icon name={p.icon} size={11} style={{ color: p.color }} />
+                  {p.label}
+                </div>
+              ))}
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="px-6 pb-6 flex flex-col gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>Имя</label>
+                <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 transition-all" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--panel-border))" }}>
+                  <Icon name="User" size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <input
+                    required
+                    type="text"
+                    placeholder="Ваше имя"
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    className="flex-1 bg-transparent text-sm outline-none"
+                    style={{ color: "hsl(var(--foreground))" }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>Email</label>
+                <div className="flex items-center gap-2 rounded-lg px-3 py-2.5" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--panel-border))" }}>
+                  <Icon name="Mail" size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <input
+                    required
+                    type="email"
+                    placeholder="your@email.com"
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    className="flex-1 bg-transparent text-sm outline-none"
+                    style={{ color: "hsl(var(--foreground))" }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>Пароль</label>
+                <div className="flex items-center gap-2 rounded-lg px-3 py-2.5" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--panel-border))" }}>
+                  <Icon name="KeyRound" size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <input
+                    required
+                    type="password"
+                    placeholder="Минимум 8 символов"
+                    value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    className="flex-1 bg-transparent text-sm outline-none"
+                    style={{ color: "hsl(var(--foreground))" }}
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="mt-1 w-full py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{ background: "linear-gradient(90deg, hsl(var(--highlight)), #0ea5e9)", color: "#fff", boxShadow: "0 4px 20px hsl(var(--highlight) / 0.35)" }}
+              >
+                <Icon name="Rocket" size={15} />
+                Создать аккаунт бесплатно
+              </button>
+              <p className="text-center text-xs opacity-40 mt-1">
+                Нажимая кнопку, вы соглашаетесь с условиями использования
+              </p>
+            </form>
+          </>
+        ) : (
+          <div className="flex flex-col items-center text-center px-8 py-10 animate-fade-in">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", boxShadow: "0 0 40px rgba(34,197,94,0.35)" }}>
+              <Icon name="Check" size={28} style={{ color: "#fff" }} />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Добро пожаловать!</h3>
+            <p className="text-sm opacity-60 mb-1">Аккаунт успешно создан.</p>
+            <p className="text-sm opacity-60 mb-6">Теперь вам доступны все инструменты редактора — <span className="font-semibold" style={{ color: "#22c55e" }}>бесплатно</span>.</p>
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(90deg, hsl(var(--highlight)), #0ea5e9)", color: "#fff" }}
+            >
+              <Icon name="Layers" size={15} />
+              Перейти в редактор
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function VideoModal({ tutorial, onClose }: { tutorial: typeof TUTORIALS[0]; onClose: () => void }) {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showRegister, setShowRegister] = useState(false);
 
   useEffect(() => {
     if (!playing) return;
@@ -485,6 +620,8 @@ function VideoModal({ tutorial, onClose }: { tutorial: typeof TUTORIALS[0]; onCl
   };
 
   return (
+    <>
+    {showRegister && <RegisterModal onClose={() => { setShowRegister(false); onClose(); }} />}
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease-out" }}
@@ -600,23 +737,25 @@ function VideoModal({ tutorial, onClose }: { tutorial: typeof TUTORIALS[0]; onCl
           <div className="flex gap-2">
             <button
               onClick={() => setPlaying(p => !p)}
-              className="flex-1 py-2.5 rounded text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-150 hover:opacity-90 active:scale-98"
-              style={{ background: "hsl(var(--highlight))", color: "#fff" }}
+              className="py-2.5 px-4 rounded text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-150 hover:opacity-90"
+              style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
             >
               <Icon name={playing ? "Pause" : "PlayCircle"} size={15} />
-              {playing ? "Пауза" : "Смотреть урок"}
+              {playing ? "Пауза" : "Смотреть"}
             </button>
             <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded text-sm font-medium border transition-colors hover:bg-secondary"
-              style={{ borderColor: "hsl(var(--panel-border))", color: "hsl(var(--muted-foreground))" }}
+              onClick={() => setShowRegister(true)}
+              className="flex-1 py-2.5 rounded text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "linear-gradient(90deg, hsl(var(--highlight)), #0ea5e9)", color: "#fff", boxShadow: "0 4px 20px hsl(var(--highlight) / 0.3)" }}
             >
-              Позже
+              <Icon name="Rocket" size={15} />
+              Начать бесплатно
             </button>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }
 
